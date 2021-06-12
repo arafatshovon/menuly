@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title></title>
+    <style>
+        .passwordbox{
+            display: block;
+            margin: auto;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+    <form class="passwordbox" action="/resetPassword" method="POST">
+        <input type="password" name="currentpass" placeholder="current password">
+        <input type="password" name="newpass" placeholder="new password">
+        <input type="email" name="email" value={{Email}} style="display:none">
+        <input type="submit" value="submit">
+    </form>
+</body>
+</html>

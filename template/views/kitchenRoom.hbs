@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="http://localhost:5000/socket.io/socket.io.js"></script>
+    <title>kitchenRoom</title>
+    <style>
+        body{
+            background-color: oldlace;
+        }
+
+        .box{
+            display: flex;
+            justify-content: space-around;
+            width:90vw;
+            height:fit-content;
+            background-color:#70a1ff;
+        }
+
+        .food{
+            display: block;
+            width:fit-content;
+            height: fit-content;
+        }
+        .status{
+            padding:10px;
+            border: 2px solid red;
+            font-family: cursive;
+            color:white;
+        }
+        a{
+            font-family: cursive;
+            font-size: 20px;
+            padding: 10px;
+        }
+
+    </style>
+</head>
+<body>
+    <p id="address" style="display: none;">{{ID}}</p>
+    <p style="text-transform: capitalize;">{{Name}}</p>
+    <div class="box">
+
+    </div>
+
+    <a href="/orderQueue">Waiter End</a>
+    <a href="/restaurantHome">Home</a>
+    <a href="/Payment">Payment Counter</a>
+    <a href="/logout">Log Out</a>
+    
+    <script>
+        const socket = io("http://localhost:5000");
+        var address = document.getElementById('address').innerText;
+        var box = document.querySelector('.box');
+        var foodInProgress = {};
+        socket.emit('kitchenRoomOrder', address);
+        socket.on('kitchen', order=>{
+            if(Array.isArray(order)){
+                for(index in order){
+                    showfood(order[index]);
+                    foodInProgress[order[index].id] = order[index];
+                }
+            }
+            else{
+                showfood(order);
+                foodInProgress[order.id] = order;
+            }
+        })
+
+        socket.on('refreshKitchen', obj=>{
+            console.log('hello');
+            location.reload();
+        })
+
+        function showfood(order){
+            let Table = document.createElement('div');
+            let tableno = document.createElement('p');
+            let customer = document.createElement('p');
+            let btn = document.createElement('button');
+            let btn1 = document.createElement('button');
+            let status = document.createElement('p');
+            Table.id = order.id + 't';
+            btn.id = order.id;
+            btn1.id = 'c'+order.id;
+            btn.innerText = 'CreatePayment';
+            btn1.innerText = 'Cancel Order';
+            status.innerText = 'In progress';
+            tableno.innerText = 'Table no: ' + order.tableNo;
+            customer.innerText = order.Name;
+            status.classList.add('status');
+            for(obj of order.list){
+                let para = document.createElement('p');
+                para.innerText = `Name: ${obj.fname}- Quantity: ${obj.fquantity}`;
+                Table.append(para);
+            }
+            Table.append(status);
+            Table.append(tableno);
+            Table.append(customer);
+            Table.append(btn);
+            Table.append(btn1);
+            box.append(Table);
+            btn.addEventListener('click', (event)=>{
+                let id = event.target.id;
+                document.getElementById(id+'t').remove();
+                socket.emit('createPayment', foodInProgress[id], address);
+                delete foodInProgress[id];
+            })
+
+            btn1.addEventListener('click', (event)=>{
+                let id = event.target.id.substring(1, event.target.id.length);
+                socket.emit('cancelOrderKitchen', foodInProgress[id], address);
+                document.getElementById(id+'t').remove();
+                delete foodInProgress[id];
+            })
+        }
+    </script>
+</body>
+</html>

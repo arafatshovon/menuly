@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="http://localhost:5000/socket.io/socket.io.js"></script>
+    <title>orderQueue</title>
+    <style>
+        body{
+            background-color: #ced6e0;
+        }
+        .order{
+            display: flex;
+            justify-content: space-evenly;
+            width:90vw;
+            height: fit-content;
+        }
+        .table{
+            border:3px solid black;
+            padding:10px;
+        }
+        .divider{
+            padding: 10px;
+            border:2px solid black;
+        }
+
+        .food{
+            padding: 10px;
+            border:2px solid black;
+            cursor: pointer;
+        }
+        .food:hover{
+            background-color: white;
+        }
+        a{
+            font-family: cursive;
+            font-size: 20px;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+    <p style="display: none;" id="address">{{ID}}</p>
+    <P style="text-transform: capitalize;">{{Name}}</P>
+    <h2>Current orders</h2>
+    <div class="order">
+
+    </div>
+
+    <div id="editmenu" style="display: none;">
+        <div id='edit'>
+
+        </div>
+        <div id="newitem" style="border:3px solid red;">
+            <p>New item</p>
+            <p>Click on the Items you want to add to your order.</p>
+        </div>
+    </div>
+
+    <a href="/restaurantHome">Home</a>
+    <a href="/kitchen">Kitchen</a>
+    <a href="/Payment">Payment Counter</a>
+    <a href="/logout">Log Out</a>
+
+    <script>
+        const socket = io("http://localhost:5000");
+        var restaurant = document.querySelector('.order');
+        var address = document.getElementById('address').innerText;
+        var div1 = document.getElementById('edit');
+        var div2 = document.getElementById('newitem');
+        var allorder = {};
+        var allitem; //list of all food object available in the restaurant
+        var checkifexist = [];
+        var isedit = false, isSaved = true;
+        socket.emit('orderQueue', address);
+        socket.emit('sendAllitem', address);
+        socket.on("waiter", order=>{
+            if(Array.isArray(order)){
+                for(index in order){
+                    allorder[order[index].id] = order[index];
+                    showTable(order[index]);
+                }
+            }
+            else{
+                allorder[order.id] = order;
+                showTable(order);
+            }
+        })
+
+        socket.on('receiveAllitem', obj=>{
+            allitem = obj;
+            showAllitem();
+        })
+
+        socket.on('refreshWaiter', (obj, message)=>{
+            if(message=='save'){
+                allorder[obj.id] = obj;
+                saveTableOrder(obj.id);
+            }
+            else
+                document.getElementById(obj.id).remove();
+            //location.reload();
+        })
+
+        function showTable(order){
+            let Table = document.createElement('div');
+            let btn1 = document.createElement('button');
+            let btn2 = document.createElement('button');
+            let btn3 = document.createElement('button');
+            let customer = document.createElement('p');
+            let totalprice = document.createElement('p');
+            let TableNo = document.createElement('p');
+            let foods = document.createElement('div');
+            btn1.innerText = 'Forward to kitchen';
+            btn2.innerText = 'Edit';
+            btn3.innerText = 'Cancel Order';
+            TableNo.innerText = ` Table no: ${order.tableNo}`;
+            customer.innerText = order.Name;
+            Table.id = order.id;
+            totalprice.id = 'p' + order.id;
+            foods.id = 'd' + order.id;
+            btn1.id = 'f' + order.id;
+            btn2.id = 'e' + order.id;
+            btn3.id = 'c' + order.id;
+            totalprice.innerText = 'Total-'+order.price;
+            for(obj of order.list){
+                let d = document.createElement('div');
+                d.classList.add('divider');
+                d.innerHTML = `<p>${obj.fid}</p> <p>${obj.fname}</p> <p> price: ${obj.fprice}</p> <p> quantity: ${obj.fquantity}</p>`;
+                foods.append(d);
+            }
+            Table.append(btn1);
+            Table.append(btn2);
+            Table.append(btn3);
+            Table.append(customer);
+            Table.append(TableNo);
+            Table.append(totalprice);
+            Table.append(foods);
+            restaurant.append(Table);
+            insertButton(btn1, btn2, btn3);
+        }
+
+        function insertButton(btn1, btn2, btn3){
+            btn1.addEventListener('click', (event)=>{
+                let id = event.target.id.substring(1, event.target.id.length);
+                //console.log(id);
+                socket.emit('sendToKitchen', allorder[id], address);
+                console.log(allorder[id]);
+                document.getElementById(id).remove();
+                delete allorder[id];
+                console.log(allorder);
+            })
+
+            btn2.addEventListener('click', (event)=>{
+                if(!isedit){
+                    isedit = true;
+                    document.getElementById('editmenu').style.display = 'block';
+                    let id = event.target.id.substring(1,event.target.id.length);
+                    console.log(id);
+                    let foodlist = allorder[id].list;
+                    let sbtn = document.createElement('button');
+                    let cancelbtn = document.createElement('button');
+                    sbtn.innerText = 'save changes';
+                    cancelbtn.innerText = 'close';
+                    sbtn.id = 's' + id;
+                    div1.append(sbtn);
+                    div1.append(cancelbtn);
+                    for(obj of foodlist){
+                        checkifexist.push(obj.fid);
+                        let p = document.createElement('p');
+                        p.innerHTML =`${obj.fname}-quantity:<input type="number" id=${obj.fid} data-name=${obj.fname} data-price=${obj.fprice} value=${obj.fquantity}>`;
+                        div1.append(p);
+                    }
+                    sbtn.addEventListener('click', (event)=>{
+                        let ID = event.target.id.substring(1,event.target.id.length);
+                        editObject(ID);
+                        closeEditMenu();
+                        saveTableOrder(ID);
+                    })
+                    cancelbtn.addEventListener('click', closeEditMenu);
+                }
+            })
+
+            btn3.addEventListener('click', (event)=>{
+                let id = event.target.id.substring(1,event.target.id.length);
+                socket.emit('cancelOrderWaiter', allorder[id], address);
+                document.getElementById(id).remove();
+                delete allorder[id];
+                console.log(allorder);
+            })
+        }
+
+        function editObject(ID){
+            //document.getElementById('f'+ID).disabled = true;
+            let clslist = document.querySelectorAll('input[type="number"]');
+            console.log(clslist);
+            let flist = [];
+            let deletedList = [];
+            let tprice = 0;
+            for(let i=0;i<clslist.length;i++){
+                tprice += Number(clslist[i].dataset.price)*Number(clslist[i].value);
+                if(Number(clslist[i].value)>0){
+                    let obj2 = {
+                    fid : clslist[i].id,
+                    fname : clslist[i].dataset.name,
+                    fprice : clslist[i].dataset.price,
+                    fquantity : Number(clslist[i].value)
+                    }
+                    flist.push(obj2);
+                }else
+                    deletedList.push(clslist[i].id);
+            }
+            let obj1 = {
+                list:flist,
+                price: Number(tprice),
+                id:Number(ID)
+            }
+            allorder[ID] = obj1;
+            socket.emit('saveChanges', allorder[ID], address, deletedList);
+        }
+
+        function closeEditMenu(){
+            let childlist1 = div1.children;
+            let len1 = childlist1.length;
+            for(let i=len1-1;i>=0;i--)
+                childlist1[i].remove();
+            checkifexist = [];
+            document.getElementById('editmenu').style.display = 'none';
+            isedit = false;
+        }
+
+        function saveTableOrder(ID){
+            document.getElementById('d'+ID).remove();
+            document.getElementById('p'+ID).innerText = allorder[ID].price;
+            let foods = document.createElement('div');
+            foods.id = 'd'+ID;
+            for(obj of allorder[ID].list){
+                let d = document.createElement('div');
+                d.classList.add('divider');
+                d.innerHTML = `<p>${obj.fid}</p> <p>${obj.fname}</p> <p> price: ${obj.fprice}</p> <p> quantity: ${obj.fquantity}</p>`;
+                foods.append(d);
+            }
+            document.getElementById(ID).append(foods);
+        }
+
+        function showAllitem(){
+            for(value of allitem){
+                let para = document.createElement('p');
+                para.id = value._id;
+                para.innerText = `${value.foodName}-${value.foodPrice}`;
+                div2.append(para);
+                para.classList.add('food');
+                para.addEventListener('click', (event)=>{
+                    let p1 = document.createElement('p');
+                    let fid = event.target.id;
+                    if(!checkifexist.includes(fid)){
+                        [fname, fprice] = event.target.innerText.split('-');
+                        p1.innerHTML =`${fname}-quantity:<input type="number" id=${fid} data-name=${fname} data-price=${fprice} value="0">`;
+                        div1.append(p1);
+                    }
+                })
+            }
+        }
+    </script>
+</body>
+</html>

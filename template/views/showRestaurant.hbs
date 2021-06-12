@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin</title>
+    <style>
+        .foodbox{
+            display: flex;
+            {{!-- justify-content: space-evenly; --}}
+            width: 700px;
+            height: 600px;
+            margin-left:20px;
+        }
+        .fooditem{
+            display: block;
+            width: fit-content;
+            height: fit-content;
+            background-color: #a4b0be;
+            border: 2px solid red;
+        }
+    </style>
+</head>
+<body>
+    {{!-- renderring food item --}}
+    {{#if food}}
+        <h3>Available food items in This Restaurant</h3>
+        <div class="foodbox">
+        {{#each item}}
+            <div class="fooditem">
+                <img src={{this.foodImage}} width="300px" height="200px" alt="Image of the item">
+                <p>Name:{{this.foodName}}</p>
+                <p>price:{{this.foodPrice}}</p>
+                <p>Description:{{this.foodDescription}}</p>
+            </div>
+        {{/each}}
+        </div>
+    {{/if}}
+
+    {{!-- rendering orders --}}
+    {{#if order}}
+        <div class="foodbox">
+            {{#each item}}
+                <div style="border: 2px solid black;">
+                    <p>Customer Name: {{this.Name}}</p>
+                    <p>Table no:{{this.tableNo}}</p>
+                    <p>Total Price: {{this.price}}</p>
+                    {{#each this.list as |value key|}}
+                        <div class="fooditem">
+                            <p>Food name:{{value.fname}}</p>
+                            <p>Food quantity:{{value.fquantity}}</p>
+                            <p>Food price:{{value.fprice}}</p>
+                        </div>
+                    {{/each}}
+                </div>
+            {{/each}}
+        </div>
+    {{/if}}
+
+    {{!-- rendering kitchen --}}
+    {{#if kitchen}}
+        <div class="foodbox">
+            {{#each item}}
+                <div style="border: 2px solid black;">
+                    <p>Customer Name: {{this.Name}}</p>
+                    <p>Table no:{{this.tableNo}}</p>
+                    <p>Total Price: {{this.price}}</p>
+                    {{#each this.list as |value key|}}
+                        <div class="fooditem">
+                            <p>Food name:{{value.fname}}</p>
+                            <p>Food quantity:{{value.fquantity}}</p>
+                            <p>Food price:{{value.fprice}}</p>
+                        </div>
+                    {{/each}}
+                </div>
+            {{/each}}
+        </div>
+    {{/if}}
+
+    {{!-- rendering payment  --}}
+    {{#if payment}}
+        <div class="foodbox">
+            {{#each item}}
+                <div style="border: 2px solid black;">
+                    <p>Customer Name: {{this.Name}}</p>
+                    <p>Table no:{{this.tableNo}}</p>
+                    <p>Total Price: {{this.price}}</p>
+                    {{#each this.list as |value key|}}
+                        <div class="fooditem">
+                            <p>Food name:{{value.fname}}</p>
+                            <p>Food quantity:{{value.fquantity}}</p>
+                            <p>Food price:{{value.fprice}}</p>
+                        </div>
+                    {{/each}}
+                </div>
+            {{/each}}
+        </div>
+    {{/if}}
+</body>
+</html>

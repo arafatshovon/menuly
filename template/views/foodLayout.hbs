@@ -1,0 +1,214 @@
+{{!-- <!DOCTYPE html> --}}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="http://localhost:5000/socket.io/socket.io.js"></script>
+    <title></title>
+    <style>
+        body{
+            background-color: #786fa6;
+        }
+        .foodbox{
+            display: flex;
+            {{!-- justify-content: space-evenly; --}}
+            width: 700px;
+            height: 600px;
+            margin-left:20px;
+        }
+        .fooditem{
+            display: block;
+            width: fit-content;
+            height: fit-content;
+            background-color: #a4b0be;
+            border: 2px solid red;
+        }
+
+        .cart{
+            font-size: 20px;
+            font-family: cursive;
+            background-color: black;
+            color:white;
+        }
+        .btn{
+            color:dodgerblue;
+            font-family: cursive;
+            font-size: 20px;
+            padding: 5px;
+            border-radius: 5px;
+        }
+        .btn:hover{
+            background-color: dodgerblue;
+            color:white;
+        }
+        table{
+            border: 3px solid red;
+        }
+        td, th{
+            align-items:center;
+            padding: 5px;
+            text-transform: capitalize;
+            background-color: azure;
+            font-family: cursive;
+        }
+    </style>
+</head>
+<body>
+    <h2 style="text-align: center;">Welcome to {{name}}</h2>
+    <p id="address" style="display:none">{{ID}}</p>
+    <p id='key' style="display:none">{{uniqueKey}}</p>
+    <input type="text" placeholder="Customer Name" id="customerName">
+    <input type="number" placeholder="Table no" id="tableNo">
+    <div class="foodbox">
+        {{#each item}}
+            <div class="fooditem">
+                <img src={{this.foodImage}} width="300px" height="200px" alt="Image of the item">
+                <p>Name:{{this.foodName}}</p>
+                <p>price:{{this.foodPrice}}</p>
+                <p>Description:{{this.foodDescription}}</p>
+                <input type="number" id="I{{this._id}}" placeholder="Quantity" min="0">
+                <button id="F{{this._id}}" data-Name={{this.foodName}} data-Price={{this.foodPrice}} onclick="addtocart(event)">Add to cart</button>
+            </div>
+        {{/each}}
+    </div>
+    <div>
+        <button onclick="placeOrder()" id="setorder" class='btn'>Send your Order</button>
+        <p id="price">Total Price: 0 </p>
+        <div>
+            <button onclick="savechanges()">Save Changes</button>
+            <table id="tab">
+                <tr>
+                    <th>Food Name</th>
+                    <th>Price</th>
+                    <th>Quantity</th>
+                </tr>
+            </table>
+        </div>
+    </div>
+    
+    <script>
+        const socket = io("http://localhost:5000");
+        var address = document.getElementById('address').innerText;
+        var cart = document.getElementById('cart');
+        var totalprice = document.getElementById('price');
+        var uniqueid = document.getElementById('key').innerText;
+        var checklist = document.getElementById('tab');     //table of added food items to the cart
+        var netprice = 0;
+        var isordered = false;
+        var addedfoods = [];
+        
+        socket.on('ordersuccessful', ()=>{
+            let btn = document.getElementById('setorder');
+            btn.innerText = 'Order Placed';
+            btn.disabled = true;
+        })
+
+        socket.on('info', (obj, l1, ID)=>{
+            if(ID==address){
+                totalprice.innerText = 'Total Price: ' + obj.price;
+                for(value of l1)
+                    document.getElementById('row'+value).remove();
+
+                for(let i=0;i<obj.list.length;i++){
+                    let id = obj.list[i].fid;
+                    document.getElementById('c'+id).value = obj.list[i].fquantity;
+                }
+                alert("your ordered item is modified.");
+            }
+        })
+
+        function addtocart(event){
+            let btn = event.target;
+            let foodID = btn.id.substring(1,btn.id.length);
+            let foodName = btn.dataset.name;
+            let foodPrice = btn.dataset.price;
+            let amount = Number(document.getElementById('I'+foodID).value);
+            if(amount>=0){
+                let holder = document.getElementById('c'+foodID);
+                if(holder){
+                    quantity = Number(holder.value);
+                    holder.value = amount;
+                    netprice += Number(foodPrice)*(amount-quantity);
+                    totalprice.innerText ='Total Price: ' +  netprice;
+                }
+                else{
+                    addedfoods.push(foodID);
+                    netprice += Number(foodPrice)*amount;
+                    totalprice.innerText ='Total Price: ' +  netprice;
+                    let test = document.createElement('input');
+                    test.type = 'text';  test.id= 'c'+foodID;  test.value = amount; 
+                    test.dataset.name = foodName; test.dataset.price = foodPrice; 
+                    let tr = document.createElement('tr'); 
+                    let td1 = document.createElement('td');
+                    let td2 = document.createElement('td');
+                    let td3 = document.createElement('td');
+                    tr.id = 'row'+foodID;
+                    td1.innerText = foodName; td2.innerText = foodPrice;
+                    td3.append(test);  tr.append(td1);  tr.append(td2); tr.append(td3);
+                    checklist.append(tr);
+                }  
+            }
+        }
+
+        function savechanges(){
+            //let orderedFoodList = document.querySelectorAll('input[type="text"]');
+            netprice = 0;
+            if(addedfoods.length != 0){
+                for(let i=0;i<addedfoods.length;i++){
+                    let inputarea = document.getElementById('c'+addedfoods[i]);
+                    let quantity = Number(inputarea.value);
+                    let price = Number(inputarea.dataset.price);
+                    if(quantity>=0)
+                        netprice += quantity*price;
+                    else
+                        inputarea.value = 0;
+                }
+            }
+            totalprice.innerText = 'Total Price: ' + netprice;
+        }
+
+        
+        function placeOrder(){
+            let flist = [];
+            //let orderedFoodList = document.querySelectorAll('input[type="text"]');
+            if(addedfoods.length != 0){
+                for(let i=0;i<addedfoods.length;i++){
+                    let id =  addedfoods[i]; // orderedFoodList[i].id.substring(1, orderedFoodList[i].id.length);
+                    let inputarea = document.getElementById('c'+id);
+                    let Name = inputarea.dataset.name;
+                    let quantity = Number(inputarea.value);
+                    let price = Number(inputarea.dataset.price);
+                    if(quantity>0){
+                        let obj = {
+                            fid:id,
+                            fprice:price,
+                            fquantity:quantity,
+                            fname:Name
+                        }
+                        flist.push(obj);
+                    }
+                }
+                let tabno = document.getElementById('tableNo').value;          //table no
+                let customername = document.getElementById('customerName').value;   //name of customer
+                let wantedFood = {list:flist, price:Number(netprice), id:Number(uniqueid), tableNo:tabno, Name:customername};
+                if(!isordered){
+                    socket.emit('order', {item:wantedFood, ID:address});
+                    isordered = true;
+                }
+            }
+            else
+                alert("You haven't added anything to the cart yet.");
+        }
+        //console.log(wantedFood);
+                //try{
+                //    let response = await fetch('http://localhost:5000/order', {method:"GET", headers:{item:JSON.stringify(wnatedFood), email:address}});
+                //    let data = response.json();
+                //    console.log(data);
+                //    document.getElementById('setorder').innerText = 'Order Placed';
+                //}catch(e){
+                //    console.log(e);
+                //}
+    </script>
+</body>
+</html>

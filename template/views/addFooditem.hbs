@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add new food</title>
+</head>
+<body>
+    <form action="/addnewfood" method="POST"  encType="multipart/form-data">
+        {{#if isowner}}
+            <input type="email" name="email" placeholder="email" value="{{Email}}" style="display: none;">
+            {{else}}
+            <input type="email" name="email" placeholder="email" required>
+        {{/if}}
+        <input type="text" name="foodname1" placeholder="foodname" required><br>
+        <input type="number" name="foodprice1" placeholder="foodprice" required><br>
+        <input type="text" name="foodDescription1" placeholder="description"><br>
+        <input type="file" name="foodimage1"><br>
+        <input type="number" name="item" value="1" id="total" style="display: none;">
+        <div id="newitem">
+        </div>
+        <input type="submit" value="submit">
+    </form>
+    <button onclick="addFoodItem()">add more item</button>
+    
+    <script>
+        var count = 1;
+        var item = document.getElementById('newitem');
+        var total = document.getElementById('total');
+        function addFoodItem(){
+            count++;
+            let foodSection = document.createElement('div');
+            foodSection.innerHTML = `<input type="text" name=${'foodname'+ count} placeholder="foodname" required><br>
+            <input type="number" name=${'foodprice'+ count} placeholder="0" required><br>
+            <input type="text" name=${'foodDescription'+ count} placeholder="description"><br>
+            <input type="file" name=${'foodimage'+ count} required>`;
+            let btn = document.createElement('button');
+            btn.innerText = 'remove';
+            btn.addEventListener('click', ()=>{
+                foodSection.remove();
+            })
+            foodSection.append(btn);
+            total.value = count;
+            item.append(foodSection);
+        }
+    </script>
+</body>
+</html>

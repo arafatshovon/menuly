@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title></title>
+    <style>
+        body{
+            background-color: gray;
+        }
+        .btn{
+            padding: 5px;
+            color:black;
+        }
+
+        .btn:hover{
+            color:white;
+            background-color: red;
+        }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h2>Restaurant List</h2>
+        {{#each rest}}
+        <div style="border:2px solid red;">
+            <p>{{this.id}}</p>
+            <p>{{this.name}}</p>
+
+            <form action="/adminRestaurantFood" method="GET">
+                <input type="text" name="ID" value={{this.id}} style="display: none;">
+                <input type="submit" value="Visit Food Items">
+            </form>
+
+            <form action="/adminRestaurantOrder" method="GET">
+                <input type="text" name="ID" value={{this.id}} style="display: none;">
+                <input type="submit" value="Visit Current Order">
+            </form>
+
+            <form action="/adminRestaurantKitchen" method="GET">
+                <input type="text" name="ID" value={{this.id}} style="display: none;">
+                <input type="submit" value="Visit Restaurant Kitchen">
+            </form>
+
+            <form action="/adminRestaurantPayment" method="GET">
+                <input type="text" name="ID" value={{this.id}} style="display: none;">
+                <input type="submit" value="Visit restaurant Payment">
+            </form>
+
+            <form action="/adminRestaurantUser" method="GET">
+                <input type="text" name="ID" value={{this.id}} style="display: none;">
+                <input type="submit" value="Add and Delete User">
+            </form>
+
+            <button class="btn" id={{this.id}} onclick="unregister(event)">Unregister Restaurant</button>
+        </div>
+        {{/each}}
+    </div>
+    <a href="/admin" class="btn">Home</a>
+    <a href="/createRestaurant" class="btn">Create restaurant</a>
+    <a href="/logout" class="btn">Logout</a>
+
+
+    <script>
+        async function unregister(event){
+            let id = event.target.id;
+            let answer = confirm("Are you sure you want to remove this restaurant from database?");
+            if(answer){
+                let response = await fetch('http://localhost:5000/adminRestaurantDelete', 
+                {
+                    method:'POST', 
+                    body:JSON.stringify({ID:id}), 
+                    headers:{'Content-Type':'application/json'} 
+                });
+                if(response['ok'])
+                    alert("Deleted successfully.");
+                else
+                    alert("not successful.");
+            }
+        }
+    </script>
+</body>
+</html>

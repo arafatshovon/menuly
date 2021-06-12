@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create restaurant</title>
+    <style>
+        .box{
+            display: block;
+            margin: auto;
+            width:fit-content;
+            height: fit-content;
+            border:3px solid red;
+        }
+        .box1{
+            display: block;
+            margin: auto;
+            width:fit-content;
+            height: fit-content;
+            border:3px solid blue;
+        }
+    </style>
+</head>
+<body>
+    <div class="box">
+        {{!-- <button id="btn" onclick="addUserID()">add Extra User</button> --}}
+        <form action="/createRestaurant" method="POST" id="form">
+            {{!-- <input type="email" name="email1" placeholder="email" required><br>
+            <input type="password" name="pass1" placeholder="password" required><br>
+            <input type="password" name="conpass1" placeholder="Confirm passowrd" required><br>
+            <input type="text" name="post1" value="" placeholder="Designation" required><br> --}}
+            <input type="text" name="resName" placeholder="Restaurant name" required><br>
+            {{!-- <input type="number" name="item" value="1" id="total"> --}}
+            <div class="box1">
+
+            </div>
+            <input type="submit" value="submit">
+        </form>
+    </div>
+
+    <script>
+        var count = 1;
+        //var btn = document.getElementById('btn');
+        var newItem = document.querySelector('.box1');
+        var total = document.getElementById('total');
+        function addUserID(){
+            count++;
+            let usersection = document.createElement('div');
+            usersection.innerHTML = `<input type="email" name=${'email'+ count} placeholder="email" required><br>
+            <input type="password" name=${'pass'+ count} placeholder="password" required><br>
+            <input type="password" name=${'conpass'+ count}  placeholder="confirm password" required><br>
+            <input type="text" name=${'post'+ count} placeholder="Designation" required>`;
+            let btn = document.createElement('button');
+            btn.innerText = 'remove';
+            btn.addEventListener('click', ()=>{
+                usersection.remove();
+            })
+            usersection.append(btn);
+            total.value = count;
+            newItem.append(usersection);
+        }
+    </script>
+</body>
+</html>

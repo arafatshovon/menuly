@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Query</title>
+    <style>
+        .main{
+            display: flex;
+            justify-content: space-evenly;
+            max-width: 700px;
+            height: fit-content;
+            border: 2px solid black;
+        }
+        .user{
+            display: block;
+        }
+        .newUser{
+            border: 2px solid red;
+            padding: auto;
+        }
+    </style>
+</head>
+<body>
+    {{!-- <p id="address" style="display:none">{{id}}</p> --}}
+    <div class="main">
+        {{#each user}}
+            <div class="user" id="T{{this.email}}">
+                <p>{{this.email}}</p>
+                <p>{{this.designation}}</p>
+                <p>{{this.state}}</p>
+                <button id={{this.email}} onclick="deleteUser(event)">Delete User</button>
+            </div>
+        {{/each}}
+    </div>
+    <hr><hr>
+    Incase of multiple user input make sure emails are different<br>
+    <button id="btn" onclick="addUserID()">add Extra User</button>
+    <form action="/addUser" method="POST" id="form">
+        <input type="text" name="ID" value={{id}} style="display: none;">
+        <input type="email" name="email1" placeholder="email" required><br>
+        <input type="password" name="pass1" placeholder="password" required><br>
+        <input type="password" name="conpass1" placeholder="Confirm passowrd" required><br>
+        <input type="radio" name="post1" value="owner" required>Owner<br>
+        <input type="radio" name="post1" value="employee" required>Employee<br>
+        <input type="number" name="item" value="1" id="total" style="display: none;">
+        <div class="box1">
+
+        </div>
+        <input type="submit" value="submit">
+    </form>
+
+    <script>
+        var count = 1;
+        //var address = document.getElementById('address').innerText;
+        var newItem = document.querySelector('.box1');
+        var total = document.getElementById('total');
+        function addUserID(){
+            count++;
+            let usersection = document.createElement('div');
+            usersection.classList.add('newUser');
+            usersection.innerHTML = `
+            <input type="email" name=${'email'+ count} placeholder="email" required><br>
+            <input type="password" name=${'pass'+ count} placeholder="password" required><br>
+            <input type="password" name=${'conpass'+ count}  placeholder="confirm password" required><br>
+            <input type="radio" name=${'post'+count} value="owner" required>Owner
+            <input type="radio" name=${'post'+count} value="employee" required>Employee`
+            let btn = document.createElement('button');
+            btn.innerText = 'remove';
+            btn.addEventListener('click', ()=>{
+                usersection.remove();
+            })
+            usersection.append(btn);
+            total.value = count;
+            newItem.append(usersection);
+        }
+
+        async function deleteUser(event){
+            let email = event.target.id;
+            let answer = confirm('You want to delete this item?');
+            if(answer){
+                let response = await fetch('http://localhost:5000/deleteUser', 
+                {method:'POST',
+                headers:{'Content-Type':'application/json'},
+                body:JSON.stringify({Email:email})
+                })
+                let data = response.json();
+                console.log(data['successful']);
+                location.reload();
+            }
+        }
+    </script>
+</body>
+</html>

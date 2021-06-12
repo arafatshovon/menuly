@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        .foodbox{
+            display: flex;
+            width: 700px;
+            height: 600px;
+            margin-left:20px;
+        }
+        .fooditem{
+            display: block;
+            width: fit-content;
+            height: fit-content;
+            background-color: #a4b0be;
+            border: 2px solid red;
+        }
+        input[type=checkbox]{
+            font-size: 30px;
+        }
+        a{
+            font-family: cursive;
+            font-size: 20px;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+    {{!-- <button onclick="addSelectionBox()">Select Food Items for deletion</button> --}}
+    <p id="address" style="display: none;">{{ID}}</p>
+    <p style="text-transform: capitalize;">{{Name}}</p>
+    <div class="foodbox">
+        {{#each food}}
+            <div class="fooditem" id="{{this._id}}d">
+                <img src="{{this.foodImage}}" width="300px" height="200px" alt="Image of the item">
+                <p>Name:{{this.foodName}}</p>
+                <p>price:{{this.foodPrice}}</p>
+                <p>Description:{{this.foodDescription}}</p>
+                <button id={{this._id}} data-price={{this.foodPrice}} data-name={{this.foodName}}  onclick="deleteFoood(event)">Delete item</button>
+            </div>
+        {{/each}}
+    </div>
+
+    <a href="/orderQueue">Waiter End</a>
+    <a href="/kitchen">Kitchen</a>
+    <a href="/Payment">Payment Counter</a>
+    <a href="/logout">Log Out</a>
+    <a href="/addnewFood">Add food item</a>
+    
+    <script>
+        var foodcollection = document.querySelector('.foodbox');
+        var address = document.getElementById('address').innerText;
+        async function deleteFoood(event){
+            let id = event.target.id;
+            document.getElementById(id+'d').remove();
+            let response = await fetch('http://localhost:5000/ownerRequest', 
+            {method:"POST", 
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({command:'deletion', foodID:id, ID:address})
+            });
+            console.log(response.json());
+        }
+
+        {{!-- function addSelectionBox(){
+            let list = foodcollection.children;
+            for(index in list){
+                let checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                console.log(list[index]);
+                let ID = list[index].id.substring(0, list[index].id.length-1);
+                //id = id.substring(0, id.length-1);
+                checkbox.name = 'delete'; checkbox.id = ID+'c';
+                list[index].append(checkbox);
+            }
+        } --}}
+    </script>
+</body>
+</html>
