@@ -557,10 +557,10 @@ app.get("/*", (req, res)=>{
 io.on('connection', socket=>{
     console.log(`connected: ${socket.id}`);
 
-    socket.on('order', async (obj)=>{
+    socket.on('order', async (obj, address)=>{
         try{
-            let items = obj.item;
-            let ID = obj.ID;
+            let items = obj;
+            let ID = address;
             // if(customerSckt[ID])
             //     customerSckt[ID][items.id] = socket.id;
             // else{

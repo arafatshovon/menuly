@@ -191,10 +191,10 @@
                     }
                 }
                 let tabno = document.getElementById('tableNo').value;          //table no
-                let customername = document.getElementById('customerName').value;   //name of customer
-                let wantedFood = {list:flist, price:Number(netprice), id:Number(uniqueid), tableNo:tabno, Name:customername};
+                let customer = document.getElementById('customerName').value;   //name of customer
+                let wantedFood = {list:flist, price:Number(netprice), id:Number(uniqueid), tableNo:tabno, Name:customer};
                 if(!isordered){
-                    socket.emit('order', {item:wantedFood, ID:address});
+                    socket.emit('order', wantedFood, address);
                     isordered = true;
                 }
             }
