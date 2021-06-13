@@ -75,8 +75,7 @@ var restaurant = new schema({
     orderDetails:[],            //object
     kitchen:[],                 //object
     payment:[],                 //object
-    orderHistory:[],            //object
-    resSckt:[]
+    orderHistory:[]            //object
 });
 
 // restaurant.pre("save", async function(){

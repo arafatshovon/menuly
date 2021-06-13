@@ -60,18 +60,20 @@
 
         socket.on('refreshPayment', obj=>{
             console.log('hello');
-            location.reload();
+            document.getElementById(obj.id+'t').remove();
+            delete allpayment[obj.id];
+            //location.reload();
         })
 
         function showTable(order){
             let Table = document.createElement('div');
-            let tableno = document.createElement('p');
+            let Tableno = document.createElement('p');
             let customer = document.createElement('p');
             let totalprice = document.createElement('p');
             let btn = document.createElement('button');
             let status = document.createElement('p');
             Table.id = order.id+'t';
-            tableno.innerText = 'Table no: ' + order.tableNo;
+            Tableno.innerText = 'Table no: ' + order.tableNo;
             customer.innerText = order.Name;
             status.innerText = 'Due';
             totalprice.innerText = 'Total price: ' + order.price;
@@ -87,9 +89,10 @@
                 let id = event.target.id;
                 socket.emit('clearpayment', allpayment[id], address);
                 document.getElementById(id+'t').remove();
+                console.log(allpayment[id]);
                 delete allpayment[id];
             })
-            Table.append(tableno);
+            Table.append(Tableno);
             Table.append(totalprice);
             Table.append(customer);
             Table.append(status);
