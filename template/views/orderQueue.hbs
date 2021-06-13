@@ -44,7 +44,7 @@
     <p style="display: none;" id="address">{{ID}}</p>
     <P style="text-transform: capitalize;">{{Name}}</P>
     <h2>Current orders</h2>
-    <div class="order">
+    <div class="order" id="order">
 
     </div>
 
@@ -65,7 +65,7 @@
 
     <script>
         const socket = io("http://localhost:5000");
-        var restaurant = document.querySelector('.order');
+        var restaurant = document.getElementById('order');
         var address = document.getElementById('address').innerText;
         var div1 = document.getElementById('edit');
         var div2 = document.getElementById('newitem');
@@ -215,7 +215,9 @@
             let obj1 = {
                 list:flist,
                 price: Number(tprice),
-                id:Number(ID)
+                id:Number(ID),
+                tableNo:allorder[ID].tableNo,
+                Name:allorder[ID].Name
             }
             allorder[ID] = obj1;
             socket.emit('saveChanges', allorder[ID], address, deletedList);
