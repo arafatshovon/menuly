@@ -112,6 +112,7 @@
                 let id = event.target.id.substring(1, event.target.id.length);
                 socket.emit('cancelOrderKitchen', foodInProgress[id], address);
                 document.getElementById(id+'t').remove();
+                console.log(foodInProgress[id]);
                 delete foodInProgress[id];
             })
         }

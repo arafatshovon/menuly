@@ -186,8 +186,9 @@
                 let id = event.target.id.substring(1,event.target.id.length);
                 socket.emit('cancelOrderWaiter', allorder[id], address);
                 document.getElementById(id).remove();
+                console.log(allorder[id]);
                 delete allorder[id];
-                console.log(allorder);
+                //console.log(allorder);
             })
         }
 
