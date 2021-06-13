@@ -126,11 +126,21 @@ app.post('/ownerRequest', givePermission, async (req, res)=>{
     try{
         if(req.payload.designation=='owner'){
             if(req.body.command=='deletion'){
+                let imgpath;
                 let restaurant = await Restaurant.findOne({_id:req.body.ID});
                 restaurant.foodDetails = restaurant.foodDetails.filter((value)=>{
-                    return value._id!=req.body.foodID;
+                    if(value._id!=req.body.foodID)
+                        return value;
+                    else
+                        imgpath = value.foodImage;
                 })
                 await restaurant.save();
+                file.unlink(imgpath, (err)=>{
+                    if(err)
+                        console.log(err);
+                    else
+                        console.log('successfully removed the image/png file from upload folder.');
+                })
                 res.json({result:'successful'});
             }
         }else
@@ -561,13 +571,6 @@ io.on('connection', socket=>{
         try{
             let items = obj;
             let ID = address;
-            // if(customerSckt[ID])
-            //     customerSckt[ID][items.id] = socket.id;
-            // else{
-            //     customerSckt[ID] = {};
-            //     customerSckt[ID][items.id] = socket.id;
-            //     console.log(customerSckt);
-            // }
             customerSckt.push(socket.id);
 
             let restaurant = await Restaurant.findOne({_id:ID});
