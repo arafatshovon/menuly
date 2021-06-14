@@ -169,7 +169,6 @@
             totalprice.innerText = 'Total Price: ' + netprice;
         }
 
-        
         function placeOrder(){
             let flist = [];
             //let orderedFoodList = document.querySelectorAll('input[type="text"]');
@@ -192,11 +191,14 @@
                 }
                 let tabno = document.getElementById('tableNo').value;          //table no
                 let customer = document.getElementById('customerName').value;   //name of customer
-                let wantedFood = {list:flist, price:Number(netprice), id:Number(uniqueid), tableNo:tabno, Name:customer};
-                if(!isordered){
-                    socket.emit('order', wantedFood, address);
-                    isordered = true;
-                }
+                if(customer.length>0 && tabno>0){
+                    let wantedFood = {list:flist, price:Number(netprice), id:Number(uniqueid), tableNo:tabno, Name:customer};
+                    if(!isordered){
+                        socket.emit('order', wantedFood, address);
+                        isordered = true;
+                    }
+                }else
+                    alert("Enter your name and table no.");
             }
             else
                 alert("You haven't added anything to the cart yet.");
