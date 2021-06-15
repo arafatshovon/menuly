@@ -411,11 +411,12 @@ app.post('/login', async(req, res)=>{
             }
         let isexist = await bcrypt.compare(req.body.password, password);
         if(isexist){
-            let token = await data.generateAuthToken(req.body.email, designation);
+            let time = 24*3600*1000;
+            let token = await data.generateAuthToken(req.body.email, designation, {expiresIn:'1d'});
             res.cookie('jwt',token,{
                 httpOnly:true,
                 path:'/',
-                maxAge: 24*3600*1000
+                maxAge: time
             })
             if(designation=='admin')
                 res.redirect('/admin');
