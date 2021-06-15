@@ -86,14 +86,14 @@ var restaurant = new schema({
 //     }
 // })
 
-restaurant.methods.generateAuthToken = async function(Email, post){
+restaurant.methods.generateAuthToken = async function(Email, post, time){
     try{
         payload = {
             ID:this._id,
             email:Email,
             designation:post
         }
-        const token = await jwt.sign(payload, process.env.SECRET_KEY);
+        const token = await jwt.sign(payload, process.env.SECRET_KEY, {expiresIn:time});
         this.tokens = this.tokens.concat({userToken:token});
         await this.save();
         return token;
