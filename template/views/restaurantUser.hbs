@@ -23,7 +23,7 @@
     </style>
 </head>
 <body>
-    {{!-- <p id="address" style="display:none">{{id}}</p> --}}
+    <p id="csrf" style="display:none">{{csrf}}</p>
     <div class="main">
         {{#each user}}
             <div class="user" id="T{{this.email}}">
@@ -45,6 +45,7 @@
         <input type="radio" name="post1" value="owner" required>Owner<br>
         <input type="radio" name="post1" value="employee" required>Employee<br>
         <input type="number" name="item" value="1" id="total" style="display: none;">
+        <input type="hidden" name="_csrf" value={{csrf}}>
         <div class="box1">
 
         </div>
@@ -53,7 +54,7 @@
 
     <script>
         var count = 1;
-        //var address = document.getElementById('address').innerText;
+        var CSRF = document.getElementById('csrf').innerText;
         var newItem = document.querySelector('.box1');
         var total = document.getElementById('total');
         function addUserID(){
@@ -82,7 +83,7 @@
             if(answer){
                 let response = await fetch('http://localhost:5000/deleteUser', 
                 {method:'POST',
-                headers:{'Content-Type':'application/json'},
+                headers:{'Content-Type':'application/json','CSRF-Token':CSRF},
                 body:JSON.stringify({Email:email})
                 })
                 let data = response.json();

@@ -8,6 +8,8 @@ const ckparser = require('cookie-parser');
 const jwt = require('jsonwebtoken');
 const bcrypt = require("bcrypt");
 const upload = require('express-fileupload');
+const csrf = require('csurf');
+const csrfProtection = csrf({cookie:{httpOnly:true}});
 const socketio = require('socket.io');
 const {Restaurant, transporter} = require('./database');
 const app = express();
@@ -91,7 +93,7 @@ app.get("/menu", async (req, res)=>{
 })
 
 //routes for restaurants
-app.get('/restaurantHome', givePermission, async(req, res)=>{
+app.get('/restaurantHome', csrfProtection, givePermission, async(req, res)=>{
     try{
         if(req.payload.designation=='owner'){
             let restaurant = await Restaurant.findOne({_id:req.payload.ID});
@@ -101,7 +103,7 @@ app.get('/restaurantHome', givePermission, async(req, res)=>{
             for(value of fooditems)
                 value.foodImage = path.basename(value.foodImage);
             res.render('HomeRestaurant', {food: fooditems, order: allorder, user: activeUser, 
-            ID: restaurant._id, Name: restaurant.restaurantName});
+            ID: restaurant._id, Name: restaurant.restaurantName, csrf:req.csrfToken()});
         }else
             res.send("You don't have permission to acess the page.");
     }catch(e){
@@ -122,7 +124,7 @@ app.get('/payment', givePermission, (req, res)=>{
     res.render('payment',{ID:req.User._id, Name:req.User.restaurantName});
 })
 
-app.post('/ownerRequest', givePermission, async (req, res)=>{
+app.post('/ownerRequest', csrfProtection, givePermission, async (req, res)=>{
     try{
         if(req.payload.designation=='owner'){
             if(req.body.command=='deletion'){
@@ -152,14 +154,14 @@ app.post('/ownerRequest', givePermission, async (req, res)=>{
 
 
 // routes for admin
-app.get("/createRestaurant", givePermission,(req, res)=>{
+app.get("/createRestaurant", csrfProtection, givePermission,(req, res)=>{
     if(req.User.userID[0].designation=='admin')
-        res.status(200).render("createRestaurant");
+        res.status(200).render("createRestaurant", {csrf:req.csrfToken()});
     else
         res.redirect('/*');
 })
 
-app.post("/createRestaurant", givePermission, async(req, res)=>{
+app.post("/createRestaurant", csrfProtection, givePermission, async(req, res)=>{
     try{
         let newRestaurant = new Restaurant({
             userID:[],
@@ -174,7 +176,7 @@ app.post("/createRestaurant", givePermission, async(req, res)=>{
     }
 })
 
-app.post('/addUser', givePermission, async(req, res)=>{
+app.post('/addUser', csrfProtection, givePermission, async(req, res)=>{
     if(req.payload.designation=='admin'){
         try{
             let id = req.body.ID;
@@ -212,7 +214,7 @@ app.post('/addUser', givePermission, async(req, res)=>{
         res.send("you don'y have permission to access the page.");
 })
 
-app.post('/deleteUser', givePermission, async (req, res)=>{
+app.post('/deleteUser', csrfProtection, givePermission, async (req, res)=>{
     try{
         if(req.payload.designation=='admin'){
             let restaurant = await Restaurant.findOne({'userID.email':req.body.Email});
@@ -228,7 +230,7 @@ app.post('/deleteUser', givePermission, async (req, res)=>{
     }
 })
 
-app.get('/admin', givePermission, async(req, res)=>{
+app.get('/admin', csrfProtection, givePermission, async(req, res)=>{
     if(req.payload.designation=='admin'){
         try{
             let allrestaurant = await Restaurant.find();
@@ -244,7 +246,7 @@ app.get('/admin', givePermission, async(req, res)=>{
                     list.push(obj);
             }
             console.log(list);
-            res.render('homeadmin', {rest:list});
+            res.render('homeadmin', {rest:list, csrf:req.csrfToken()});
         }catch(e){
             res.send(e);
         }     
@@ -312,12 +314,12 @@ app.get('/adminRestaurantPayment', givePermission, async(req, res)=>{
         res.send("You don't have permission to visit the page.");
 })
 
-app.get('/adminRestaurantUser',  givePermission, async(req, res)=>{
+app.get('/adminRestaurantUser', csrfProtection, givePermission, async(req, res)=>{
     if(req.payload.designation=='admin'){
         try{
             let ID = req.query.ID;
             let restaurant = await Restaurant.findOne({_id:ID});
-            res.render('restaurantUser', {user:restaurant.userID, id:restaurant._id});
+            res.render('restaurantUser', {user:restaurant.userID, id:restaurant._id, csrf:req.csrfToken()});
         }catch(e){
             console.log(e);
         }

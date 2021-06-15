@@ -32,7 +32,7 @@
 <body>
     {{!-- <button onclick="addSelectionBox()">Select Food Items for deletion</button> --}}
     <p id="address" style="display: none;">{{ID}}</p>
-    {{!-- <p id="csrf" style="display: none;">{{csrf}}</p> --}}
+    <p id="csrf" style="display: none;">{{csrf}}</p>
     <p style="text-transform: capitalize;">{{Name}}</p>
     <div class="foodbox">
         {{#each food}}
@@ -55,13 +55,13 @@
     <script>
         var foodcollection = document.querySelector('.foodbox');
         var address = document.getElementById('address').innerText;
-        //var CSRF = document.getElementById('csrf').innerText;
+        var CSRF = document.getElementById('csrf').innerText;
         async function deleteFoood(event){
             let id = event.target.id;
             document.getElementById(id+'d').remove();
             let response = await fetch('http://localhost:5000/ownerRequest', 
             {method:"POST", 
-            headers:{'Content-Type':'application/json'},
+            headers:{'Content-Type':'application/json', 'CSRF-Token':CSRF},
             body:JSON.stringify({command:'deletion', foodID:id, ID:address})
             });
             console.log(response.json());

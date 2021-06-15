@@ -23,6 +23,7 @@
 <body>
     <div class="box">
         <h2>Restaurant List</h2>
+        <p id="csrf" style="display: none;">{{csrf}}</p>
         {{#each rest}}
         <div style="border:2px solid red;">
             <p>{{this.id}}</p>
@@ -63,6 +64,7 @@
 
 
     <script>
+        var CSRF = document.getElementById('csrf').innerText;
         async function unregister(event){
             let id = event.target.id;
             let answer = confirm("Are you sure you want to remove this restaurant from database?");
@@ -71,7 +73,7 @@
                 {
                     method:'POST', 
                     body:JSON.stringify({ID:id}), 
-                    headers:{'Content-Type':'application/json'} 
+                    headers:{'Content-Type':'application/json', 'CSRF-Token':CSRF} 
                 });
                 if(response['ok'])
                     alert("Deleted successfully.");
