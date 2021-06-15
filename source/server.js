@@ -101,7 +101,7 @@ app.get('/restaurantHome', givePermission, async(req, res)=>{
             for(value of fooditems)
                 value.foodImage = path.basename(value.foodImage);
             res.render('HomeRestaurant', {food: fooditems, order: allorder, user: activeUser, 
-            ID: restaurant._id, Name: restaurant.restaurantName });
+            ID: restaurant._id, Name: restaurant.restaurantName});
         }else
             res.send("You don't have permission to acess the page.");
     }catch(e){
@@ -415,8 +415,8 @@ app.post('/login', async(req, res)=>{
             let token = await data.generateAuthToken(req.body.email, designation, time);
             res.cookie('jwt',token,{
                 httpOnly:true,
-                path:'/',
-                maxAge: time
+                path:'/'
+                //maxAge: time
             })
             if(designation=='admin')
                 res.redirect('/admin');
