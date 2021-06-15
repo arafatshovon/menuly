@@ -413,7 +413,7 @@ app.post('/login', async(req, res)=>{
             }
         let isexist = await bcrypt.compare(req.body.password, password);
         if(isexist){
-            let time = 3600*1000;
+            let time = 2*60*1000;
             let token = await data.generateAuthToken(req.body.email, designation, time);
             res.cookie('jwt',token,{
                 httpOnly:true,
@@ -441,6 +441,7 @@ app.get("/logout", givePermission, async (req, res)=>{
         })
         await req.User.save();
         res.clearCookie("jwt");
+        res.clearCookie("_csrf");
         res.redirect('/login');
     }catch(e){
         res.send(e);
