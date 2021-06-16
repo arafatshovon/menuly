@@ -43,10 +43,7 @@ async function givePermission(req, res, next){
         req.payload = result;
         next();
     }catch(e){
-    if(e.name == "JsonWebTokenError")
         res.redirect('/login');
-    else
-        res.send("You don't have access to the page");
     }
 }
 
