@@ -5,8 +5,9 @@ const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
 var schema = mongoose.Schema;
 
-var dbUrl =  process.env.DB_URL; 
-mongoose.connect(dbUrl, {useNewUrlParser:true, useUnifiedTopology:true, useCreateIndex:true})
+//var dbUrl =  process.env.DB_URL; 
+var dbUrl =  process.env.db_url; 
+mongoose.connect(dbUrl, {useNewUrlParser:true, useUnifiedTopology:true, useCreateIndex:true, useFindAndModify:false})
 .then(()=>console.log("connection successful"))
 .catch((error)=>console.log(error));
 
