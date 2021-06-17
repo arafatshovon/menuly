@@ -7,7 +7,7 @@ var schema = mongoose.Schema;
 
 //var dbUrl =  process.env.DB_URL; 
 var dbUrl =  process.env.db_url; 
-mongoose.connect(dbUrl, {useNewUrlParser:true, useUnifiedTopology:true, useCreateIndex:true, useFindAndModify:false})
+mongoose.connect(dbUrl, {useNewUrlParser:true, useUnifiedTopology:true, useCreateIndex:true})
 .then(()=>console.log(`connection successful with ${dbUrl}`))
 .catch((error)=>console.log(error));
 
