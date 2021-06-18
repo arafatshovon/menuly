@@ -94,7 +94,7 @@ restaurant.methods.generateAuthToken = async function(Email, post, time){
             email:Email,
             designation:post
         }
-        const token = await jwt.sign(payload, process.env.SECRET_KEY, {expiresIn:time});
+        const token = await jwt.sign(payload, process.env.SECRET_KEY, {expiresIn:'2hr'});
         this.tokens = this.tokens.concat({userToken:token});
         await this.save();
         return token;
