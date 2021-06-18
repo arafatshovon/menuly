@@ -787,7 +787,8 @@ io.on('connection', socket=>{
             })
 
             let date = new Date();
-            obj.time = date.toLocaleString();
+            obj.time = date.toLocaleTimeString();
+            obj.day = date.toDateString();
             restaurant.orderHistory.push(obj);
             await restaurant.save();
 
