@@ -344,7 +344,7 @@ app.get('/adminRestaurantUser', csrfProtection, givePermission, async(req, res)=
         res.redirect('/*');
 })
 
-app.post('/adminRestaurantDelete', givePermission, async(req, res)=>{
+app.post('/adminRestaurantDelete', csrfProtection, givePermission, async(req, res)=>{
     if(req.payload.designation=='admin'){
         try{
             let id = req.body.ID;
