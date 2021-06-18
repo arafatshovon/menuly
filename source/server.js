@@ -410,21 +410,23 @@ app.post('/addnewfood', csrfProtection, givePermission, async(req, res)=>{
 })
 
 
-app.get('/login', (req, res)=>{
+app.get('/login', csrfProtection, (req, res)=>{
     try{
         const token = req.cookies.jwt;
         let result = jwt.verify(token, process.env.SECRET_KEY);
         if(result.designation=='admin')
             res.redirect('/admin');
         else if(result.designation=='owner')
+            res.redirect('/restaurantHome');
+        else
             res.redirect('/orderQueue');
     }catch(e){
-        res.render('login');
+        res.render('login', {csrf:req.csrfToken()});
     }
 })
 
 
-app.post('/login', async(req, res)=>{
+app.post('/login', csrfProtection, async(req, res)=>{
     try{
         let data = await Restaurant.findOne({'userID.email':req.body.email});
         //console.log(data);
@@ -472,11 +474,11 @@ app.get("/logout", givePermission, async (req, res)=>{
     }
 })
 
-app.get('/forgotpassword', (req, res)=>{
-    res.render('forgotpass');
+app.get('/forgotpassword', csrfProtection,(req, res)=>{
+    res.render('forgotpass', {csrf:req.csrfToken()});
 })
 
-app.post('/forgotpassword', async (req, res)=>{
+app.post('/forgotpassword', csrfProtection, async (req, res)=>{
     try{
         let email = req.body.email;
         let user = await Restaurant.findOne({'userID.email':email});

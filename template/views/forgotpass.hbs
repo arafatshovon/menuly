@@ -17,6 +17,7 @@
         {{else}}
         <form action="/forgotpassword" method="POST">
             <input type="email" name="email" placeholder="your email">
+            <input type="hidden" name="_csrf" value={{csrf}}>
             <input type="submit" value="send">
         </form>
      {{/if}}
