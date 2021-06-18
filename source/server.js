@@ -151,6 +151,32 @@ app.post('/ownerRequest', csrfProtection, givePermission, async (req, res)=>{
 
 
 // routes for admin
+app.get('/admin', csrfProtection, givePermission, async(req, res)=>{
+    if(req.payload.designation=='admin'){
+        try{
+            let allrestaurant = await Restaurant.find();
+            let list = [];
+            for(index in allrestaurant){
+                let obj = {
+                    id:allrestaurant[index]._id,
+                    name:allrestaurant[index].restaurantName
+                }
+                if(allrestaurant[index].userID.length>0 && (allrestaurant[index].userID[0].designation=='owner' || allrestaurant[index].userID[0].designation=='employee'))
+                    list.push(obj);
+                else if(allrestaurant[index].userID.length==0)
+                    list.push(obj);
+            }
+            console.log(list);
+            res.render('homeadmin', {rest:list, csrf:req.csrfToken()});
+        }catch(e){
+            res.send(e);
+        }     
+    }
+    else
+        res.redirect('/');
+})
+
+
 app.get("/createRestaurant", csrfProtection, givePermission,(req, res)=>{
     if(req.User.userID[0].designation=='admin')
         res.status(200).render("createRestaurant", {csrf:req.csrfToken()});
@@ -171,6 +197,44 @@ app.post("/createRestaurant", csrfProtection, givePermission, async(req, res)=>{
     }catch(e){
         res.send(e);
     }
+})
+
+app.get('/addNewAdmin', csrfProtection, givePermission, async(req, res)=>{
+    if(req.payload.designation=='admin'){
+        try{
+            let restaurant = await Restaurant.findOne({_id:req.payload.ID});
+            res.render('addNewAdmin', {user:restaurant.userID, id:restaurant._id, csrf:req.csrfToken()});
+        }catch(e){
+            res.send(e);
+        }
+    }
+})
+
+app.post('/addNewAdmin', csrfProtection, givePermission, async(req, res)=>{
+    if(req.payload.designation=='admin'){
+        let restaurant = await Restaurant.findOne({_id:req.payload.ID});
+        let allrestaurant = await Restaurant.find();
+        if(req.body.pass==req.body.conpass){
+            if(checkForDuplicate(allrestaurant, req.body.email)){
+                let psw = await bcrypt.hash(req.body.pass, 10);
+                let obj = {
+                    email:req.body.email,
+                    password:psw,
+                    designation:'admin'
+                }
+                restaurant.userID.push(obj);
+                await restaurant.save();
+                res.redirect('/admin');
+            }else{
+                res.send(`${req.body.email} is already present in the database. Try another email.`);
+                return;
+            }
+        }else{
+            res.send("Password and Confirm password doesn't match.");
+            return;
+        }
+    }else
+        res.redirect('/*');
 })
 
 app.post('/addUser', csrfProtection, givePermission, async(req, res)=>{
@@ -203,12 +267,13 @@ app.post('/addUser', csrfProtection, givePermission, async(req, res)=>{
                 }
             }
             await restaurant.save();
-            res.send("User upload successful");
+            //res.send("User upload successful");
+            res.redirect('/admin');
         }catch(e){
             res.send(e);
         }
     }else
-        res.send("you don'y have permission to access the page.");
+        res.redirect('/*');
 })
 
 app.post('/deleteUser', csrfProtection, givePermission, async (req, res)=>{
@@ -227,30 +292,6 @@ app.post('/deleteUser', csrfProtection, givePermission, async (req, res)=>{
     }
 })
 
-app.get('/admin', csrfProtection, givePermission, async(req, res)=>{
-    if(req.payload.designation=='admin'){
-        try{
-            let allrestaurant = await Restaurant.find();
-            let list = [];
-            for(index in allrestaurant){
-                let obj = {
-                    id:allrestaurant[index]._id,
-                    name:allrestaurant[index].restaurantName
-                }
-                if(allrestaurant[index].userID.length>0 && (allrestaurant[index].userID[0].designation=='owner' || allrestaurant[index].userID[0].designation=='employee'))
-                    list.push(obj);
-                else if(allrestaurant[index].userID.length==0)
-                    list.push(obj);
-            }
-            console.log(list);
-            res.render('homeadmin', {rest:list, csrf:req.csrfToken()});
-        }catch(e){
-            res.send(e);
-        }     
-    }
-    else
-        res.redirect('/');
-})
 
 app.get('/adminRestaurantFood', givePermission, async(req, res)=>{
     if(req.payload.designation=='admin'){
@@ -285,31 +326,6 @@ app.get('/adminRestaurantOrder', givePermission, async(req, res)=>{
         res.send("You don't have permission to visit the page.");
 })
 
-// app.get('/adminRestaurantKitchen', givePermission, async(req, res)=>{
-//     if(req.payload.designation=='admin'){
-//         try{
-//             let ID = req.query.ID;
-//             let restaurant = await Restaurant.findOne({_id:ID});
-//             res.render('showRestaurant', {kitchen:true, item:restaurant.kitchen});
-//         }catch(e){
-//             res.send(e);
-//         }
-//     }else
-//         res.send("You don't have permission to visit the page.");
-// })
-
-// app.get('/adminRestaurantPayment', givePermission, async(req, res)=>{
-//     if(req.payload.designation=='admin'){
-//         try{
-//             let ID = req.query.ID;
-//             let restaurant = await Restaurant.findOne({_id:ID});
-//             res.render('showRestaurant', {payment:true, item: restaurant.payment});
-//         }catch(e){
-//             res.send(e);
-//         }
-//     }else
-//         res.send("You don't have permission to visit the page.");
-// })
 
 app.get('/adminRestaurantUser', csrfProtection, givePermission, async(req, res)=>{
     if(req.payload.designation=='admin'){
