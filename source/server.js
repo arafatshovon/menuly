@@ -102,7 +102,7 @@ app.get('/restaurantHome', csrfProtection, givePermission, async(req, res)=>{
             res.render('HomeRestaurant', {food: fooditems, order: allorder, user: activeUser, 
             ID: restaurant._id, Name: restaurant.restaurantName, csrf:req.csrfToken()});
         }else
-            res.send("You don't have permission to acess the page.");
+            res.redirect('/*');
     }catch(e){
         res.send(e);
     }
@@ -192,8 +192,8 @@ app.post("/createRestaurant", csrfProtection, givePermission, async(req, res)=>{
         })
         await newRestaurant.save();
         console.log("user saved");
-        //res.redirect("/admin");
-        res.send("user saved");
+        res.redirect("/admin");
+        //res.send("user saved");
     }catch(e){
         res.send(e);
     }
@@ -212,26 +212,30 @@ app.get('/addNewAdmin', csrfProtection, givePermission, async(req, res)=>{
 
 app.post('/addNewAdmin', csrfProtection, givePermission, async(req, res)=>{
     if(req.payload.designation=='admin'){
-        let restaurant = await Restaurant.findOne({_id:req.payload.ID});
-        let allrestaurant = await Restaurant.find();
-        if(req.body.pass==req.body.conpass){
-            if(checkForDuplicate(allrestaurant, req.body.email)){
-                let psw = await bcrypt.hash(req.body.pass, 10);
-                let obj = {
-                    email:req.body.email,
-                    password:psw,
-                    designation:'admin'
+        try{
+            let restaurant = await Restaurant.findOne({_id:req.body.ID});
+            let allrestaurant = await Restaurant.find();
+            if(req.body.pass==req.body.conpass){
+                if(checkForDuplicate(allrestaurant, req.body.email)){
+                    let psw = await bcrypt.hash(req.body.pass, 10);
+                    let obj = {
+                        email:req.body.email,
+                        password:psw,
+                        designation:'admin'
+                    }
+                    restaurant.userID.push(obj);
+                    await restaurant.save();
+                    res.redirect('/admin');
+                }else{
+                    res.send(`${req.body.email} is already present in the database. Try another email.`);
+                    return;
                 }
-                restaurant.userID.push(obj);
-                await restaurant.save();
-                res.redirect('/admin');
             }else{
-                res.send(`${req.body.email} is already present in the database. Try another email.`);
+                res.send("Password and Confirm password doesn't match.");
                 return;
             }
-        }else{
-            res.send("Password and Confirm password doesn't match.");
-            return;
+        }catch(e){
+            res.send(e);
         }
     }else
         res.redirect('/*');
@@ -310,7 +314,7 @@ app.get('/adminRestaurantFood', givePermission, async(req, res)=>{
             res.send(e);
         }
     }else
-        res.send("You don't have permission to visit the page.");
+        res.redirect('/*');
 })
 
 app.get('/adminRestaurantOrder', givePermission, async(req, res)=>{
@@ -323,7 +327,7 @@ app.get('/adminRestaurantOrder', givePermission, async(req, res)=>{
             res.send(e);
         }
     }else
-        res.send("You don't have permission to visit the page.");
+        res.redirect('/*');
 })
 
 
@@ -336,7 +340,8 @@ app.get('/adminRestaurantUser', csrfProtection, givePermission, async(req, res)=
         }catch(e){
             console.log(e);
         }
-    }
+    }else
+        res.redirect('/*');
 })
 
 app.post('/adminRestaurantDelete', givePermission, async(req, res)=>{
@@ -371,34 +376,34 @@ app.post('/addnewfood', csrfProtection, givePermission, async(req, res)=>{
         let restaurant = await Restaurant.findOne({'userID.email':req.body.email});
         for(let i=1;i<=req.body.item;i++){
             if(req.body['foodname'+i]){
-            let fileobj = req.files['foodimage'+i];
-            // console.log(fileobj);
-            let filename = Date.now() + '-' + fileobj.name;
-            let obj = {
-                foodName:req.body['foodname'+i],
-                foodPrice:req.body['foodprice'+i],
-                foodDescription:req.body['foodDescription'+i],
-                foodImage: path.join(__dirname, `../uploads/${filename}`)
+                let fileobj = req.files['foodimage'+i];
+                // console.log(fileobj);
+                let filename = Date.now() + '-' + fileobj.name;
+                let obj = {
+                    foodName:req.body['foodname'+i],
+                    foodPrice:req.body['foodprice'+i],
+                    foodDescription:req.body['foodDescription'+i],
+                    foodImage: path.join(__dirname, `../uploads/${filename}`)
+                }
+                restaurant.foodDetails.push(obj);
+                fileobj.mv(path.join(__dirname, `../uploads/${filename}`), (err)=>{
+                    if(err)
+                        res.send(err);
+                })
             }
-            restaurant.foodDetails.push(obj);
-            fileobj.mv(path.join(__dirname, `../uploads/${filename}`), (err)=>{
-                if(err)
-                    res.send(err);
-            })
         }
-    }
-    restaurant.foodDetails.sort(function(a, b){
-        if(a.foodName > b.foodName)
-            return 1;
+        restaurant.foodDetails.sort(function(a, b){
+            if(a.foodName > b.foodName)
+                return 1;
+            else
+                return -1;
+        })
+        await restaurant.save();
+        //res.send('uploaded successfully.');
+        if(req.payload.designation=='admin')
+            res.redirect('/admin');
         else
-            return -1;
-    })
-    await restaurant.save();
-    //res.send('uploaded successfully.');
-    if(file.res.payload.designation=='admin')
-        res.redirect('/admin');
-    else
-        res.redirect('/restaurantHome');
+            res.redirect('/restaurantHome');
     }catch(e){
         res.send(e);
     }
