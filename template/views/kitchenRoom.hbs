@@ -70,8 +70,14 @@
         })
 
         socket.on('refreshKitchen', obj=>{
-            console.log('hello');
-            location.reload();
+            try{
+                console.log('hello');
+                document.getElementById(obj.id+'t').remove();
+                delete foodInProgress[obj.id];
+            }catch(error){
+                console.log(error);
+                //location.reload();
+            }
         })
 
         function showfood(order){

@@ -42,7 +42,7 @@ async function givePermission(req, res, next){
         req.Token = token;
         req.payload = result;
         next();
-    }catch(e){
+    }catch(e){ 
         res.redirect('/login');
     }
 }
@@ -85,7 +85,7 @@ app.get("/menu", async (req, res)=>{
     }
     //console.log(id);
     let key = Date.now() + Math.floor(Math.random()*100);
-    console.log(key);
+    //console.log(key);
     res.status(200).render("foodLayout", {item:foodlist, name:restaurant.restaurantName, ID:id, uniqueKey:key});
 })
 
@@ -277,7 +277,7 @@ app.get('/adminRestaurantOrder', givePermission, async(req, res)=>{
         try{
             let ID = req.query.ID;
             let restaurant = await Restaurant.findOne({_id:ID});
-            res.render('showRestaurant', {order:true, item:restaurant.orderDetails});
+            res.render('showRestaurant', {order:true, item:restaurant.orderHistory});
         }catch(e){
             res.send(e);
         }
@@ -285,31 +285,31 @@ app.get('/adminRestaurantOrder', givePermission, async(req, res)=>{
         res.send("You don't have permission to visit the page.");
 })
 
-app.get('/adminRestaurantKitchen', givePermission, async(req, res)=>{
-    if(req.payload.designation=='admin'){
-        try{
-            let ID = req.query.ID;
-            let restaurant = await Restaurant.findOne({_id:ID});
-            res.render('showRestaurant', {kitchen:true, item:restaurant.kitchen});
-        }catch(e){
-            res.send(e);
-        }
-    }else
-        res.send("You don't have permission to visit the page.");
-})
+// app.get('/adminRestaurantKitchen', givePermission, async(req, res)=>{
+//     if(req.payload.designation=='admin'){
+//         try{
+//             let ID = req.query.ID;
+//             let restaurant = await Restaurant.findOne({_id:ID});
+//             res.render('showRestaurant', {kitchen:true, item:restaurant.kitchen});
+//         }catch(e){
+//             res.send(e);
+//         }
+//     }else
+//         res.send("You don't have permission to visit the page.");
+// })
 
-app.get('/adminRestaurantPayment', givePermission, async(req, res)=>{
-    if(req.payload.designation=='admin'){
-        try{
-            let ID = req.query.ID;
-            let restaurant = await Restaurant.findOne({_id:ID});
-            res.render('showRestaurant', {payment:true, item: restaurant.payment});
-        }catch(e){
-            res.send(e);
-        }
-    }else
-        res.send("You don't have permission to visit the page.");
-})
+// app.get('/adminRestaurantPayment', givePermission, async(req, res)=>{
+//     if(req.payload.designation=='admin'){
+//         try{
+//             let ID = req.query.ID;
+//             let restaurant = await Restaurant.findOne({_id:ID});
+//             res.render('showRestaurant', {payment:true, item: restaurant.payment});
+//         }catch(e){
+//             res.send(e);
+//         }
+//     }else
+//         res.send("You don't have permission to visit the page.");
+// })
 
 app.get('/adminRestaurantUser', csrfProtection, givePermission, async(req, res)=>{
     if(req.payload.designation=='admin'){
@@ -341,14 +341,16 @@ app.post('/adminRestaurantDelete', givePermission, async(req, res)=>{
 
 
 // routes for registered restaurants and admin
-app.get("/addnewfood", givePermission, (req, res)=>{
+app.get("/addnewfood", csrfProtection, givePermission, (req, res)=>{
     if(req.payload.designation=='admim')
-        res.render("addFooditem",{isowner:false});
+        res.render("addFooditem",{isowner:false, csrf:req.csrfToken()});
+    else if(res.payload.designation=='owner')
+        res.render('addFooditem', {isowner:true, Email:req.payload.email, csrf:req.csrfToken()});
     else
-        res.render('addFooditem', {isowner:true, Email:req.payload.email});
+        res.redirect('/orderQueue');
 })
 
-app.post('/addnewfood', givePermission, async(req, res)=>{
+app.post('/addnewfood', csrfProtection, givePermission, async(req, res)=>{
     try{
         let restaurant = await Restaurant.findOne({'userID.email':req.body.email});
         for(let i=1;i<=req.body.item;i++){
@@ -376,7 +378,11 @@ app.post('/addnewfood', givePermission, async(req, res)=>{
             return -1;
     })
     await restaurant.save();
-    res.send('uploaded successfully.');
+    //res.send('uploaded successfully.');
+    if(file.res.payload.designation=='admin')
+        res.redirect('/admin');
+    else
+        res.redirect('/restaurantHome');
     }catch(e){
         res.send(e);
     }

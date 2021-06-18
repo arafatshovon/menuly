@@ -46,6 +46,7 @@
                     <p>Customer Name: {{this.Name}}</p>
                     <p>Table no:{{this.tableNo}}</p>
                     <p>Total Price: {{this.price}}</p>
+                    <p>Time of Payment: {{this.time}}</p>
                     {{#each this.list as |value key|}}
                         <div class="fooditem">
                             <p>Food name:{{value.fname}}</p>
@@ -58,44 +59,6 @@
         </div>
     {{/if}}
 
-    {{!-- rendering kitchen --}}
-    {{#if kitchen}}
-        <div class="foodbox">
-            {{#each item}}
-                <div style="border: 2px solid black;">
-                    <p>Customer Name: {{this.Name}}</p>
-                    <p>Table no:{{this.tableNo}}</p>
-                    <p>Total Price: {{this.price}}</p>
-                    {{#each this.list as |value key|}}
-                        <div class="fooditem">
-                            <p>Food name:{{value.fname}}</p>
-                            <p>Food quantity:{{value.fquantity}}</p>
-                            <p>Food price:{{value.fprice}}</p>
-                        </div>
-                    {{/each}}
-                </div>
-            {{/each}}
-        </div>
-    {{/if}}
-
-    {{!-- rendering payment  --}}
-    {{#if payment}}
-        <div class="foodbox">
-            {{#each item}}
-                <div style="border: 2px solid black;">
-                    <p>Customer Name: {{this.Name}}</p>
-                    <p>Table no:{{this.tableNo}}</p>
-                    <p>Total Price: {{this.price}}</p>
-                    {{#each this.list as |value key|}}
-                        <div class="fooditem">
-                            <p>Food name:{{value.fname}}</p>
-                            <p>Food quantity:{{value.fquantity}}</p>
-                            <p>Food price:{{value.fprice}}</p>
-                        </div>
-                    {{/each}}
-                </div>
-            {{/each}}
-        </div>
-    {{/if}}
+    
 </body>
 </html>

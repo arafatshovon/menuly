@@ -59,10 +59,14 @@
         })
 
         socket.on('refreshPayment', obj=>{
-            console.log('hello');
-            document.getElementById(obj.id+'t').remove();
-            delete allpayment[obj.id];
-            //location.reload();
+            try{
+                console.log('hello');
+                document.getElementById(obj.id+'t').remove();
+                delete allpayment[obj.id];
+            }catch(error){
+                console.log(error)
+                location.reload();
+            }
         })
 
         function showTable(order){

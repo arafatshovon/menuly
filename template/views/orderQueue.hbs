@@ -94,13 +94,19 @@
         })
 
         socket.on('refreshWaiter', (obj, message)=>{
-            if(message=='save'){
-                allorder[obj.id] = obj;
-                saveTableOrder(obj.id);
-            }
-            else
-                document.getElementById(obj.id).remove();
-            //location.reload();
+            try{
+                if(message=='save'){
+                    allorder[obj.id] = obj;
+                    saveTableOrder(obj.id);
+                }
+                else{
+                    console.log('hello');
+                    document.getElementById(obj.id).remove();
+                }
+            }catch(error){
+                console.log(error);
+                //location.reload();
+            }    
         })
 
         function showTable(order){
