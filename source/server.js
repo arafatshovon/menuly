@@ -410,7 +410,7 @@ app.post('/addnewfood', csrfProtection, givePermission, async(req, res)=>{
 })
 
 
-app.get('/login', csrfProtection, (req, res)=>{
+app.get('/login', (req, res)=>{
     try{
         const token = req.cookies.jwt;
         let result = jwt.verify(token, process.env.SECRET_KEY);
@@ -421,12 +421,12 @@ app.get('/login', csrfProtection, (req, res)=>{
         else
             res.redirect('/orderQueue');
     }catch(e){
-        res.render('login', {csrf:req.csrfToken()});
+        res.render('login');
     }
 })
 
 
-app.post('/login', csrfProtection, async(req, res)=>{
+app.post('/login', async(req, res)=>{
     try{
         let data = await Restaurant.findOne({'userID.email':req.body.email});
         //console.log(data);
