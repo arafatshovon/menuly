@@ -365,7 +365,7 @@ app.post('/adminRestaurantDelete', csrfProtection, givePermission, async(req, re
 app.get("/addnewfood", csrfProtection, givePermission, (req, res)=>{
     if(req.payload.designation=='admim')
         res.render("addFooditem",{isowner:false, csrf:req.csrfToken()});
-    else if(res.payload.designation=='owner')
+    else if(req.payload.designation=='owner')
         res.render('addFooditem', {isowner:true, Email:req.payload.email, csrf:req.csrfToken()});
     else
         res.redirect('/orderQueue');
